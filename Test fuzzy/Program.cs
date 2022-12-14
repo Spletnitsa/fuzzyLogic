@@ -66,8 +66,10 @@ namespace Test_fuzzy
                 this.rules = rules;
             }
 
-            public double[] membershipDegreeFunc(FuzzySubset subset)
+            private void membershipDegreeFunc()
             {
+                FuzzySubset subset = input.MFs[0];
+
                 double xIncreasing = subset.S2 - subset.S1;
                 double xDecreasing = subset.S3 - subset.S2;
                 double increasingValuePrice = xIncreasing / 10;
@@ -91,7 +93,7 @@ namespace Test_fuzzy
                         membershipDegree[i] = 1;
                 }
 
-                return membershipDegree;
+
             }
         }
 
@@ -136,7 +138,7 @@ namespace Test_fuzzy
             double[] highCostSubsetObjects = new double[] { 1400, 1500, 1670, 1790 };
             FuzzySubset highCost = new FuzzySubset("Высокая", 1100, 1500, 1800, highCostSubsetObjects);
 
-            subsets1.AddRange(new[] { low, bellowNorm, norm, aboveNorm, highCost });
+            subsets2.AddRange(new[] { low, bellowNorm, norm, aboveNorm, highCost });
 
             FuzzySet output = new FuzzySet("Стоимость(руб)", 0, 1500, subsets2);
 
@@ -150,11 +152,6 @@ namespace Test_fuzzy
             rules.AddRange(new[] { rule1, rule2, rule3, rule4, rule5 });
 
             FuzzyLog fuzzy1 = new FuzzyLog(input, output, rules);
-
-            for (int i = 0; i < input.MFs.Count; i++)
-            {
-                Console.WriteLine(fuzzy1.membershipDegreeFunc(input.MFs[i])[0]);
-            }
         }
     }
 }
