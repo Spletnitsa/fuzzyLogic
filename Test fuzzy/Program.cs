@@ -143,11 +143,11 @@ namespace Test_fuzzy
                     }
                 }
 
-                for (int i = 0; i < input.MFs.Count; i++)
+                for (int i = 0; i < output.MFs.Count; i++)
                 {
-                    if (rules[numberRule].B == input.MFs[i].name)
+                    if (rules[numberRule].B == output.MFs[i].name)
                     {
-                        lengthB = input.MFs[i].objects.Count;
+                        lengthB = output.MFs[i].objects.Count;
                         indexB = i;
                     }
                 }
