@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Net.Http.Headers;
 
 namespace Test_fuzzy
 {
@@ -59,6 +60,7 @@ namespace Test_fuzzy
             private FuzzySet output;
             private List<Rule> rules;
 
+
             public FuzzyLog(FuzzySet input, FuzzySet output, List<Rule>rules)
             {
                 this.input = input;
@@ -68,32 +70,104 @@ namespace Test_fuzzy
 
             private void membershipDegreeFunc()
             {
-                FuzzySubset subset = input.MFs[0];
+                int iteration = 0;
+                FuzzySet set = new FuzzySet();
 
-                double xIncreasing = subset.S2 - subset.S1;
-                double xDecreasing = subset.S3 - subset.S2;
-                double increasingValuePrice = xIncreasing / 10;
-                double decreasingValuePrice = xDecreasing / 10;
-                double[] membershipDegree = new double[subset.objects.Count];
-                double value;
-
-                for (int i = 0; i < subset.objects.Count; i++)
+                while (iteration < 2)
                 {
-                    if (subset.objects[i] < subset.S2)
+                    if (iteration == 0)
                     {
-                        value = (subset.objects[i] - subset.S1) / increasingValuePrice / 10;
-                        membershipDegree[i] = value;
+                        set = input;
                     }
-                    else if(subset.objects[i] > subset.S2)
+                    else if (iteration == 1)
                     {
-                        value = 1 - ((subset.objects[i] - subset.S2) / decreasingValuePrice / 10);
-                        membershipDegree[i] = value;
+                        set = output;
                     }
-                    else
-                        membershipDegree[i] = 1;
+
+                    for (int i = 0; i < set.MFs.Count; i++)
+                    {
+                        FuzzySubset subset = set.MFs[i];
+
+                        double xIncreasing = subset.S2 - subset.S1;
+                        double xDecreasing = subset.S3 - subset.S2;
+                        double increasingValuePrice = xIncreasing / 10;
+                        double decreasingValuePrice = xDecreasing / 10;
+                        double[] degrees = new double[subset.objects.Count];
+                        double value;
+
+                        for (int j = 0; j < subset.objects.Count; j++)
+                        {
+                            if (subset.objects[j] < subset.S2)
+                            {
+                                value = (subset.objects[j] - subset.S1) / increasingValuePrice / 10;
+                                degrees[j] = value;
+                            }
+                            else if(subset.objects[j] > subset.S2)
+                            {
+                                value = 1 - ((subset.objects[j] - subset.S2) / decreasingValuePrice / 10);
+                                degrees[j] = value;
+                            }
+                            else
+                                degrees[j] = 1;
+                        }
+
+                        if (iteration == 0)
+                        {
+                            input.MFs[i].membershipDegree.AddRange(degrees);
+                        }
+                        else if (iteration == 1)
+                        {
+                            output.MFs[i].membershipDegree.AddRange(degrees);
+                        }
+                    }
+
+                    iteration++;
+                }
+            }
+
+            public double[][] implication(int numberRule)
+            {
+                int lengthA = 0;
+                int lengthB = 0;
+                int indexA = 0;
+                int indexB = 0;
+
+                membershipDegreeFunc();
+
+                for (int i = 0; i < input.MFs.Count; i++)
+                {
+                    if(rules[numberRule].A == input.MFs[i].name)
+                    {
+                        lengthA = input.MFs[i].objects.Count;
+                        indexA = i;
+                    }
                 }
 
+                for (int i = 0; i < input.MFs.Count; i++)
+                {
+                    if (rules[numberRule].B == input.MFs[i].name)
+                    {
+                        lengthB = input.MFs[i].objects.Count;
+                        indexB = i;
+                    }
+                }
 
+                double[][] matrix = new double[lengthA][];
+
+                for (int i = 0; i < lengthA; i++)
+                {
+                    matrix[i] = new double[lengthB];
+                }
+
+                for (int i = 0; i < matrix.Length; i++)
+                {
+                    for (int j = 0; j < matrix[i].Length; j++)
+                    {
+                        matrix[i][j] = Math.Min(input.MFs[indexA].membershipDegree[i], output.MFs[indexB].membershipDegree[j]);
+                    }
+                }
+
+                return matrix;
             }
         }
 
@@ -152,6 +226,18 @@ namespace Test_fuzzy
             rules.AddRange(new[] { rule1, rule2, rule3, rule4, rule5 });
 
             FuzzyLog fuzzy1 = new FuzzyLog(input, output, rules);
+
+            double[][] mtx;
+            mtx = fuzzy1.implication(0);
+
+            for (int i = 0; i < mtx.Length; i++)
+            {
+                for (int j = 0; j < mtx[i].Length; j++)
+                {
+                    Console.Write(mtx[i][j] + "\t");
+                }
+                Console.WriteLine();
+            }
         }
     }
 }
