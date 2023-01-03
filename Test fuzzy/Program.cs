@@ -68,7 +68,7 @@ namespace Test_fuzzy
                 this.rules = rules;
             }
 
-            private void membershipDegreeFunc()
+            private void MembershipDegreeFunc()
             {
                 int iteration = 0;
                 FuzzySet set = new FuzzySet();
@@ -125,14 +125,39 @@ namespace Test_fuzzy
                 }
             }
 
-            public double[][] implication(int numberRule)
+            //вынесчти следующие два метода в другой класс
+            private double[] ArraysMinValues(double[] implicationArray1, double[] implicationArray2)
+            {
+                double[] minValue = new double[implicationArray1.Length];
+
+                for (int i = 0; i < implicationArray1.Length; i++)
+                {
+                    minValue[i] = Math.Min(implicationArray1[i], implicationArray2[i]);
+                }
+
+                return minValue;
+            }
+
+            private double[] RowToArray(double[][] matrix, int rowNumber)
+            {
+                double[] array = new double[matrix[rowNumber].Length];
+
+                for (int i = 0; i < matrix[rowNumber].Length; i++)
+                {
+                    array[i] = matrix[i][rowNumber];
+                }
+
+                return array;
+            }
+
+            public double[][] Implication(int numberRule)
             {
                 int lengthA = 0;
                 int lengthB = 0;
                 int indexA = 0;
                 int indexB = 0;
 
-                membershipDegreeFunc();
+                MembershipDegreeFunc();
 
                 for (int i = 0; i < input.MFs.Count; i++)
                 {
@@ -140,6 +165,7 @@ namespace Test_fuzzy
                     {
                         lengthA = input.MFs[i].objects.Count;
                         indexA = i;
+                        break;
                     }
                 }
 
@@ -149,6 +175,7 @@ namespace Test_fuzzy
                     {
                         lengthB = output.MFs[i].objects.Count;
                         indexB = i;
+                        break;
                     }
                 }
 
@@ -163,7 +190,30 @@ namespace Test_fuzzy
                 {
                     for (int j = 0; j < matrix[i].Length; j++)
                     {
-                        matrix[i][j] = Math.Min(input.MFs[indexA].membershipDegree[i], output.MFs[indexB].membershipDegree[j]);
+                        matrix[i][j] = Math.Round(Math.Min(input.MFs[indexA].membershipDegree[i], output.MFs[indexB].membershipDegree[j]),
+                            2, MidpointRounding.AwayFromZero);
+                    }
+                }
+
+                return matrix;
+            }
+
+            public double[][] Сonvolution(double[][] implicationMatrix1, double[][] implicationMatrix2)
+            {
+                double[][] matrix = new double[implicationMatrix1.Length][];
+
+                for (int i = 0; i < matrix.Length; i++)
+                {
+                    matrix[i] = new double[implicationMatrix2[i].Length];
+                }
+
+                double[] minValue = new double[implicationMatrix1.Length];
+
+                for (int i = 0; i < matrix.Length; i++)
+                {
+                    for (int j = 0; j < matrix[i].Length; j++)
+                    {
+                        matrix[i][j] = ArraysMinValues(implicationMatrix1[i], RowToArray(implicationMatrix2, j)).Max();
                     }
                 }
 
@@ -194,7 +244,7 @@ namespace Test_fuzzy
 
             FuzzySet input = new FuzzySet("Потребляемая мощность электроэнергии(кВт*час)", 0, 250, subsets1);
 
-
+            
             List<FuzzySubset> subsets2 = new List<FuzzySubset>();
 
             double[] lowSubsetObjects = new double[] { 70, 100, 170, 330 };
@@ -228,7 +278,7 @@ namespace Test_fuzzy
             FuzzyLog fuzzy1 = new FuzzyLog(input, output, rules);
 
             double[][] mtx;
-            mtx = fuzzy1.implication(0);
+            mtx = fuzzy1.Сonvolution(fuzzy1.Implication(0), fuzzy1.Implication(1));
 
             for (int i = 0; i < mtx.Length; i++)
             {
