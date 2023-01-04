@@ -56,9 +56,9 @@ namespace Test_fuzzy
 
         public class FuzzyLog
         {
-            private FuzzySet input;
-            private FuzzySet output;
-            private List<Rule> rules;
+            public FuzzySet input { get; }
+            public FuzzySet output { get; }
+            public List<Rule> rules { get; }
 
 
             public FuzzyLog(FuzzySet input, FuzzySet output, List<Rule>rules)
@@ -66,6 +66,8 @@ namespace Test_fuzzy
                 this.input = input;
                 this.output = output;
                 this.rules = rules;
+
+                MembershipDegreeFunc();
             }
 
             private void MembershipDegreeFunc()
@@ -125,7 +127,6 @@ namespace Test_fuzzy
                 }
             }
 
-            //вынесчти следующие два метода в другой класс
             private double[] ArraysMinValues(double[] implicationArray1, double[] implicationArray2)
             {
                 double[] minValue = new double[implicationArray1.Length];
@@ -138,7 +139,7 @@ namespace Test_fuzzy
                 return minValue;
             }
 
-            private double[] RowToArray(double[][] matrix, int rowNumber)
+            private double[] ColumnToArray(double[][] matrix, int rowNumber)
             {
                 double[] array = new double[matrix[rowNumber].Length];
 
@@ -156,8 +157,6 @@ namespace Test_fuzzy
                 int lengthB = 0;
                 int indexA = 0;
                 int indexB = 0;
-
-                MembershipDegreeFunc();
 
                 for (int i = 0; i < input.MFs.Count; i++)
                 {
@@ -213,12 +212,58 @@ namespace Test_fuzzy
                 {
                     for (int j = 0; j < matrix[i].Length; j++)
                     {
-                        matrix[i][j] = ArraysMinValues(implicationMatrix1[i], RowToArray(implicationMatrix2, j)).Max();
+                        matrix[i][j] = ArraysMinValues(implicationMatrix1[i], ColumnToArray(implicationMatrix2, j)).Max();
                     }
                 }
 
                 return matrix;
             }
+
+            public double[][] RuleChange(double[][] implicationMatrix)
+            {
+                double[][] transposedMatrix = new double[implicationMatrix.Length][];
+                for (int i = 0; i < transposedMatrix.Length; i++)
+                {
+                    transposedMatrix[i] = new double[implicationMatrix[i].Length];
+                }
+
+                for (int i = 0; i < implicationMatrix.Length; i++)
+                {
+                    transposedMatrix[i] = ColumnToArray(implicationMatrix, i);
+                }
+
+                return transposedMatrix;
+            }
+
+            public double[] Addition(string setName, int subsetNumber)
+            {
+                double[] toReverse;
+                List<double> listHandler;
+
+                switch (setName)
+                {
+                    case "Потребляемая мощность электроэнергии(кВт*час)":
+                        toReverse = new double[input.MFs[subsetNumber].membershipDegree.Count];
+                        listHandler = input.MFs[subsetNumber].membershipDegree;
+                        break;
+                    case "Стоимость(руб)":
+                        toReverse = new double[output.MFs[subsetNumber].membershipDegree.Count];
+                        listHandler = output.MFs[subsetNumber].membershipDegree;
+                        break;
+                    default:
+                        Console.WriteLine("Нет такого множества");
+                        toReverse = new double[0];
+                        return toReverse;
+                }
+
+                for (int i = 0; i < toReverse.Length; i++)
+                {
+                    toReverse[i] = 1 - listHandler[i];
+                }
+
+                return toReverse;
+            }
+
         }
 
         static void Main(string[] args)
@@ -278,6 +323,24 @@ namespace Test_fuzzy
             FuzzyLog fuzzy1 = new FuzzyLog(input, output, rules);
 
             double[][] mtx;
+
+            Console.WriteLine("Операция импликации:");
+
+            mtx = fuzzy1.Implication(0);
+
+            for (int i = 0; i < mtx.Length; i++)
+            {
+                for (int j = 0; j < mtx[i].Length; j++)
+                {
+                    Console.Write(mtx[i][j] + "\t");
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("Операция свертки:");
+
             mtx = fuzzy1.Сonvolution(fuzzy1.Implication(0), fuzzy1.Implication(1));
 
             for (int i = 0; i < mtx.Length; i++)
@@ -287,6 +350,41 @@ namespace Test_fuzzy
                     Console.Write(mtx[i][j] + "\t");
                 }
                 Console.WriteLine();
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("Операция изменения праивл:");
+
+            mtx = fuzzy1.RuleChange(fuzzy1.Implication(0));
+
+            for (int i = 0; i < mtx.Length; i++)
+            {
+                for (int j = 0; j < mtx[i].Length; j++)
+                {
+                    Console.Write(mtx[i][j] + "\t");
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
+
+            double[] test;
+
+            test = fuzzy1.Addition("Потребляемая мощность электроэнергии(кВт*час)", 1);
+
+            Console.WriteLine("Значения после операции дополнения: ");
+            for (int i = 0; i < test.Length; i++)
+            {
+                Console.Write(test[i] + "\t");
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("Изначальные значения: ");
+            for (int i = 0; i < fuzzy1.input.MFs[1].membershipDegree.Count; i++)
+            {
+                Console.Write(fuzzy1.input.MFs[1].membershipDegree[i] + "\t");
             }
         }
     }
