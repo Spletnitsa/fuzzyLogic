@@ -206,8 +206,6 @@ namespace Test_fuzzy
                     matrix[i] = new double[implicationMatrix2[i].Length];
                 }
 
-                double[] minValue = new double[implicationMatrix1.Length];
-
                 for (int i = 0; i < matrix.Length; i++)
                 {
                     for (int j = 0; j < matrix[i].Length; j++)
