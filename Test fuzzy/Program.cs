@@ -5,38 +5,38 @@ namespace Test_fuzzy
 {
         public struct FuzzySet
         {
-            public string name { get; }
-            public double lowerRange { get; }
-            public double upperRange { get; }
+            public string Name { get; }
+            public double LowerRange { get; }
+            public double UpperRange { get; }
             public List<FuzzySubset> MFs { get; }
 
             public FuzzySet(string nameOfSet, double lower, double upper, List<FuzzySubset> listOfSubset)
             {
-                name = nameOfSet;
-                lowerRange = lower;
-                upperRange = upper;
+                Name = nameOfSet;
+                LowerRange = lower;
+                UpperRange = upper;
                 MFs = listOfSubset;
             }
         }
 
         public struct FuzzySubset
         {
-            public string name { get; }
+            public string Name { get; }
             public double S1 { get; }
             public double S2 { get; }
             public double S3 { get; }
-            public List<double> objects { get; }
-            public List<double> membershipDegree { get; init; }
+            public List<double> Objects { get; }
+            public List<double> MembershipDegree { get; init; }
 
             public FuzzySubset(string nameOfSubset, double S1, double S2, double S3, double[] listOfObjects)
             {
-                name = nameOfSubset;
+                Name = nameOfSubset;
                 this.S1 = S1;
                 this.S2 = S2;
                 this.S3 = S3;
-                objects = new List<double>();
-                objects.AddRange(listOfObjects);
-                membershipDegree = new List<double>();
+                Objects = new List<double>();
+                Objects.AddRange(listOfObjects);
+                MembershipDegree = new List<double>();
             }
         }
 
@@ -54,16 +54,16 @@ namespace Test_fuzzy
 
         public class FuzzyLog
         {
-            public FuzzySet input { get; }
-            public FuzzySet output { get; }
-            public List<Rule> rules { get; }
+            public FuzzySet Input { get; }
+            public FuzzySet Output { get; }
+            public List<Rule> Rules { get; }
 
 
             public FuzzyLog(FuzzySet input, FuzzySet output, List<Rule>rules)
             {
-                this.input = input;
-                this.output = output;
-                this.rules = rules;
+                this.Input = input;
+                this.Output = output;
+                this.Rules = rules;
 
                 MembershipDegreeFunc();
             }
@@ -77,11 +77,11 @@ namespace Test_fuzzy
                 {
                     if (iteration == 0)
                     {
-                        set = input;
+                        set = Input;
                     }
                     else if (iteration == 1)
                     {
-                        set = output;
+                        set = Output;
                     }
 
                     for (int i = 0; i < set.MFs.Count; i++)
@@ -92,19 +92,19 @@ namespace Test_fuzzy
                         double xDecreasing = subset.S3 - subset.S2;
                         double increasingValuePrice = xIncreasing / 10;
                         double decreasingValuePrice = xDecreasing / 10;
-                        double[] degrees = new double[subset.objects.Count];
+                        double[] degrees = new double[subset.Objects.Count];
                         double value;
 
-                        for (int j = 0; j < subset.objects.Count; j++)
+                        for (int j = 0; j < subset.Objects.Count; j++)
                         {
-                            if (subset.objects[j] < subset.S2)
+                            if (subset.Objects[j] < subset.S2)
                             {
-                                value = (subset.objects[j] - subset.S1) / increasingValuePrice / 10;
+                                value = (subset.Objects[j] - subset.S1) / increasingValuePrice / 10;
                                 degrees[j] = value;
                             }
-                            else if(subset.objects[j] > subset.S2)
+                            else if(subset.Objects[j] > subset.S2)
                             {
-                                value = 1 - ((subset.objects[j] - subset.S2) / decreasingValuePrice / 10);
+                                value = 1 - ((subset.Objects[j] - subset.S2) / decreasingValuePrice / 10);
                                 degrees[j] = value;
                             }
                             else
@@ -113,11 +113,11 @@ namespace Test_fuzzy
 
                         if (iteration == 0)
                         {
-                            input.MFs[i].membershipDegree.AddRange(degrees);
+                            Input.MFs[i].MembershipDegree.AddRange(degrees);
                         }
                         else if (iteration == 1)
                         {
-                            output.MFs[i].membershipDegree.AddRange(degrees);
+                            Output.MFs[i].MembershipDegree.AddRange(degrees);
                         }
                     }
 
@@ -156,21 +156,21 @@ namespace Test_fuzzy
                 int indexA = 0;
                 int indexB = 0;
 
-                for (int i = 0; i < input.MFs.Count; i++)
+                for (int i = 0; i < Input.MFs.Count; i++)
                 {
-                    if(rules[numberRule].A == input.MFs[i].name)
+                    if(Rules[numberRule].A == Input.MFs[i].Name)
                     {
-                        lengthA = input.MFs[i].objects.Count;
+                        lengthA = Input.MFs[i].Objects.Count;
                         indexA = i;
                         break;
                     }
                 }
 
-                for (int i = 0; i < output.MFs.Count; i++)
+                for (int i = 0; i < Output.MFs.Count; i++)
                 {
-                    if (rules[numberRule].B == output.MFs[i].name)
+                    if (Rules[numberRule].B == Output.MFs[i].Name)
                     {
-                        lengthB = output.MFs[i].objects.Count;
+                        lengthB = Output.MFs[i].Objects.Count;
                         indexB = i;
                         break;
                     }
@@ -187,7 +187,7 @@ namespace Test_fuzzy
                 {
                     for (int j = 0; j < matrix[i].Length; j++)
                     {
-                        matrix[i][j] = Math.Round(Math.Min(input.MFs[indexA].membershipDegree[i], output.MFs[indexB].membershipDegree[j]),
+                        matrix[i][j] = Math.Round(Math.Min(Input.MFs[indexA].MembershipDegree[i], Output.MFs[indexB].MembershipDegree[j]),
                             2, MidpointRounding.AwayFromZero);
                     }
                 }
@@ -239,12 +239,12 @@ namespace Test_fuzzy
                 switch (setName)
                 {
                     case "Потребляемая мощность электроэнергии(кВт*час)":
-                        toReverse = new double[input.MFs[subsetNumber].membershipDegree.Count];
-                        listHandler = input.MFs[subsetNumber].membershipDegree;
+                        toReverse = new double[Input.MFs[subsetNumber].MembershipDegree.Count];
+                        listHandler = Input.MFs[subsetNumber].MembershipDegree;
                         break;
                     case "Стоимость(руб)":
-                        toReverse = new double[output.MFs[subsetNumber].membershipDegree.Count];
-                        listHandler = output.MFs[subsetNumber].membershipDegree;
+                        toReverse = new double[Output.MFs[subsetNumber].MembershipDegree.Count];
+                        listHandler = Output.MFs[subsetNumber].MembershipDegree;
                         break;
                     default:
                         Console.WriteLine("Нет такого множества");
@@ -379,9 +379,9 @@ namespace Test_fuzzy
             Console.WriteLine();
 
             Console.WriteLine("Изначальные значения: ");
-            for (int i = 0; i < fuzzy1.input.MFs[1].membershipDegree.Count; i++)
+            for (int i = 0; i < fuzzy1.Input.MFs[1].MembershipDegree.Count; i++)
             {
-                Console.Write(fuzzy1.input.MFs[1].membershipDegree[i] + "\t");
+                Console.Write(fuzzy1.Input.MFs[1].MembershipDegree[i] + "\t");
             }
         }
     }
