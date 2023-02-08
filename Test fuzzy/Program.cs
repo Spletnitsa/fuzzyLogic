@@ -3,8 +3,6 @@ using System.Net.Http.Headers;
 
 namespace Test_fuzzy
 {
-    internal class Program
-    {
         public struct FuzzySet
         {
             public string name { get; }
@@ -263,7 +261,8 @@ namespace Test_fuzzy
             }
 
         }
-
+    internal class Program
+    {
         static void Main(string[] args)
         {
             List<FuzzySubset> subsets1 = new List<FuzzySubset>();
